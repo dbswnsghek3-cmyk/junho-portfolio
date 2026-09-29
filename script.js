@@ -5,21 +5,28 @@ const navLinks = [...document.querySelectorAll(".primary-navigation a")];
 const sections = [...document.querySelectorAll("[data-section]")];
 const revealItems = document.querySelectorAll(".reveal");
 const year = document.querySelector("[data-current-year]");
+const desktopNavigation = window.matchMedia("(min-width: 981px)");
 
 const closeMenu = () => {
   menuToggle.setAttribute("aria-expanded", "false");
   menuToggle.setAttribute("aria-label", "메뉴 열기");
   navigation.classList.remove("is-open");
-  document.body.classList.remove("menu-open");
+
+  if (desktopNavigation.matches) navigation.removeAttribute("aria-hidden");
+  else navigation.setAttribute("aria-hidden", "true");
+};
+
+const openMenu = () => {
+  menuToggle.setAttribute("aria-expanded", "true");
+  menuToggle.setAttribute("aria-label", "메뉴 닫기");
+  navigation.removeAttribute("aria-hidden");
+  navigation.classList.add("is-open");
 };
 
 menuToggle.addEventListener("click", () => {
   const isOpen = menuToggle.getAttribute("aria-expanded") === "true";
-
-  menuToggle.setAttribute("aria-expanded", String(!isOpen));
-  menuToggle.setAttribute("aria-label", isOpen ? "메뉴 열기" : "메뉴 닫기");
-  navigation.classList.toggle("is-open", !isOpen);
-  document.body.classList.toggle("menu-open", !isOpen);
+  if (isOpen) closeMenu();
+  else openMenu();
 });
 
 navLinks.forEach((link) => link.addEventListener("click", closeMenu));
@@ -27,6 +34,16 @@ navLinks.forEach((link) => link.addEventListener("click", closeMenu));
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") closeMenu();
 });
+
+document.addEventListener("click", (event) => {
+  if (navigation.classList.contains("is-open") && !header.contains(event.target)) {
+    closeMenu();
+  }
+});
+
+desktopNavigation.addEventListener("change", closeMenu);
+
+if (!desktopNavigation.matches) navigation.setAttribute("aria-hidden", "true");
 
 const sectionObserver = new IntersectionObserver(
   (entries) => {
